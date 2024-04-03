@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
 import { Note } from './components/Note'
 import { SectionTitle } from './components/SectionTitle'
 import { Filter } from './components/Filter'
 import { CreateNoteForm } from './components/CreateNoteForm'
+import { getAll, create, update } from './services'
 import { FILTER } from './constants'
-
-const NOTES_URL = 'http://localhost:3001/notes'
 
 function App() {
   
@@ -15,13 +13,9 @@ function App() {
   const [newNoteIsImportant, setNewNoteIsImportant] = useState(false)
 
   useEffect(() => {
-    axios
-      .get(NOTES_URL)
-      .then(response => {
-        if (response?.status === 200 || response?.status === 201) {
-          setNotes( response?.data )
-        }
-      })
+    getAll()
+      .then(initialNotes => setNotes(initialNotes))
+      .catch(error => alert(error?.message))
   }, [])
 
   const resetStates = () => {
@@ -51,29 +45,24 @@ function App() {
   }
 
   const createNote = (note) => {
-    axios
-      .post(NOTES_URL, note)
-      .then(response => {
-        if (response?.status === 201) {
-          setNotes(currentNotes => currentNotes?.concat(response.data))
+    create(note)
+      .then(newNote => {
+        if (newNote?.id) {
+          setNotes(currentNotes => currentNotes?.concat(newNote))
         }
       })
+      .catch(error => alert(error?.message))
   }
 
-  const patchNote = (id, important) => {
-    axios
-      .patch(`${NOTES_URL}/${id}`, { important })
-      .then(response => {
-        if (response?.status === 200) {
-          const updatedNote = response?.data
+  const updateNote = (id, important) => {
+    if (!id) return
+    update(id, { important })
+      .then(updatedNote => {
+        if (updatedNote?.id) {
           setNotes(currentNotes => currentNotes?.map(note => note?.id !== updatedNote?.id ? note : updatedNote))
         }
       })
-  } 
-
-  const toggleNoteImportance = (id, newImportance) => {
-    if (!id) return
-    patchNote(id, newImportance)
+      .catch(error => alert(error?.message))
   }
 
   const handleSubmit = (event) => {
@@ -115,7 +104,7 @@ function App() {
           {notes.map(note => 
             <Note 
               key={note.id}
-              onToggleImportance={ toggleNoteImportance } 
+              onToggleImportance={ updateNote } 
               { ...note } 
             />
           )}

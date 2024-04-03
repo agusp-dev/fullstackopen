@@ -8,7 +8,7 @@
     {
       "id": "2",
       "content": "Browser can execute only JavaScript",
-      "important": false
+      "important": true
     },
     {
       "id": "3",
@@ -23,6 +23,16 @@
     {
       "id": "957d",
       "content": "I Want to learn Node.js",
+      "important": true
+    },
+    {
+      "id": "ff5d",
+      "content": "Java is not important for me!",
+      "important": false
+    },
+    {
+      "id": "c124",
+      "content": "I want to be a fullstack...",
       "important": true
     }
   ]
