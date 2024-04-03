@@ -14,8 +14,6 @@ function App() {
   const [newNoteContent, setNewNoteContent] = useState('')
   const [newNoteIsImportant, setNewNoteIsImportant] = useState(false)
 
-  console.log('notes', notes)
-
   useEffect(() => {
     axios
       .get(NOTES_URL)
@@ -62,6 +60,22 @@ function App() {
       })
   }
 
+  const patchNote = (id, important) => {
+    axios
+      .patch(`${NOTES_URL}/${id}`, { important })
+      .then(response => {
+        if (response?.status === 200) {
+          const updatedNote = response?.data
+          setNotes(currentNotes => currentNotes?.map(note => note?.id !== updatedNote?.id ? note : updatedNote))
+        }
+      })
+  } 
+
+  const toggleNoteImportance = (id, newImportance) => {
+    if (!id) return
+    patchNote(id, newImportance)
+  }
+
   const handleSubmit = (event) => {
     event?.preventDefault()
 
@@ -99,7 +113,11 @@ function App() {
         <SectionTitle title='List' />
         <ul>
           {notes.map(note => 
-            <Note key={note.id} note={note} />
+            <Note 
+              key={note.id}
+              onToggleImportance={ toggleNoteImportance } 
+              { ...note } 
+            />
           )}
         </ul>
       </div>
