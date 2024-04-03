@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
 import { Note } from './components/Note'
-
-const FILTER = {
-  ALL: 'all',
-  IMPORTANTS: 'importants'
-}
+import { SectionTitle } from './components/SectionTitle'
+import { Filter } from './components/Filter'
+import { CreateNoteForm } from './components/CreateNoteForm'
+import { getAll, create, update } from './services'
+import { FILTER } from './constants'
 
 function App() {
   
@@ -13,22 +12,16 @@ function App() {
   const [newNoteContent, setNewNoteContent] = useState('')
   const [newNoteIsImportant, setNewNoteIsImportant] = useState(false)
 
-  console.log('notes', notes)
-
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/notes')
-      .then(response => {
-        if (response?.status === 200 || response?.status === 201) {
-          setNotes( response?.data )
-        }
-      })
+    getAll()
+      .then(initialNotes => setNotes(initialNotes))
+      .catch(error => alert(error?.message))
   }, [])
 
-  // const resetStates = () => {
-  //   setNewNoteContent('')
-  //   setNewNoteIsImportant(false)
-  // }
+  const resetStates = () => {
+    setNewNoteContent('')
+    setNewNoteIsImportant(false)
+  }
 
   const filterNotes = (str) => {
     if (!str) return notes
@@ -51,48 +44,69 @@ function App() {
     setNewNoteIsImportant(newValue)
   }
 
-  //TODO CHECK
+  const createNote = (note) => {
+    create(note)
+      .then(newNote => {
+        if (newNote?.id) {
+          setNotes(currentNotes => currentNotes?.concat(newNote))
+        }
+      })
+      .catch(error => alert(error?.message))
+  }
+
+  const updateNote = (id, important) => {
+    if (!id) return
+    update(id, { important })
+      .then(updatedNote => {
+        if (updatedNote?.id) {
+          setNotes(currentNotes => currentNotes?.map(note => note?.id !== updatedNote?.id ? note : updatedNote))
+        }
+      })
+      .catch(error => alert(error?.message))
+  }
+
   const handleSubmit = (event) => {
     event?.preventDefault()
 
-    // if (!newNoteContent) return
+    if (!newNoteContent) return
     
-    // const newNotePayload = {
-    //   id: notesArr?.length + 1,
-    //   content: newNoteContent,
-    //   important: newNoteIsImportant
-    // }
+    const notePayload = {
+      content: newNoteContent,
+      important: newNoteIsImportant
+    }
 
-    // onAddNewNote( newNotePayload )
-    // resetStates()
+    createNote(notePayload)
+    resetStates()
   }
 
   return (
     <div>
       <h1>Notes</h1>
       <div>
-        <h4>Filter</h4>
-        <input type='radio' id='filterAll' name='filter' value={ FILTER.ALL } defaultChecked onChange={ handleChangeFilter} />
-        <label htmlFor='filterAll'>All</label>
-        <input type='radio' id='filterImportants' name='filter' value={ FILTER.IMPORTANTS } onChange={ handleChangeFilter } />
-        <label htmlFor='filterImportants'>Importants</label>
+        <SectionTitle title='Filter' />
+        <Filter onHandleChangeFilter={ handleChangeFilter } />
       </div>
 
       <div>
-        <h4>Agregar Nota</h4>
-        <form onSubmit={ handleSubmit }>
-          <input value={ newNoteContent } onChange={ handleNewNoteContent } />
-          <input type='checkbox' id='isImportant' checked={ newNoteIsImportant } onChange={ handleNewNoteIsImportant }/>
-          <label htmlFor='isImportant'>Is Important</label>
-          <button type='submit'>Agregar</button>
-        </form>
+        <SectionTitle title='Add Note' />
+        <CreateNoteForm 
+          onHandleSubmit={ handleSubmit }
+          newNoteContent={ newNoteContent }
+          onHandleNewNoteContent={ handleNewNoteContent }
+          newNoteIsImportant={ newNoteIsImportant }
+          onHandleNewNoteIsImportant={ handleNewNoteIsImportant }
+        />
       </div>
 
       <div>
-        <h4>List</h4>
+        <SectionTitle title='List' />
         <ul>
           {notes.map(note => 
-            <Note key={note.id} note={note} />
+            <Note 
+              key={note.id}
+              onToggleImportance={ updateNote } 
+              { ...note } 
+            />
           )}
         </ul>
       </div>
