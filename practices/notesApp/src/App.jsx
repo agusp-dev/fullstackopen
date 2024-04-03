@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { Note } from './components/Note'
-
-const FILTER = {
-  ALL: 'all',
-  IMPORTANTS: 'importants'
-}
+import { SectionTitle } from './components/SectionTitle'
+import { Filter } from './components/Filter'
+import { CreateNoteForm } from './components/CreateNoteForm'
+import { FILTER } from './constants'
 
 function App() {
   
@@ -71,25 +70,23 @@ function App() {
     <div>
       <h1>Notes</h1>
       <div>
-        <h4>Filter</h4>
-        <input type='radio' id='filterAll' name='filter' value={ FILTER.ALL } defaultChecked onChange={ handleChangeFilter} />
-        <label htmlFor='filterAll'>All</label>
-        <input type='radio' id='filterImportants' name='filter' value={ FILTER.IMPORTANTS } onChange={ handleChangeFilter } />
-        <label htmlFor='filterImportants'>Importants</label>
+        <SectionTitle title='Filter' />
+        <Filter onHandleChangeFilter={ handleChangeFilter } />
       </div>
 
       <div>
-        <h4>Agregar Nota</h4>
-        <form onSubmit={ handleSubmit }>
-          <input value={ newNoteContent } onChange={ handleNewNoteContent } />
-          <input type='checkbox' id='isImportant' checked={ newNoteIsImportant } onChange={ handleNewNoteIsImportant }/>
-          <label htmlFor='isImportant'>Is Important</label>
-          <button type='submit'>Agregar</button>
-        </form>
+        <SectionTitle title='Add Note' />
+        <CreateNoteForm 
+          onHandleSubmit={ handleSubmit }
+          newNoteContent={ newNoteContent }
+          onHandleNewNoteContent={ handleNewNoteContent }
+          newNoteIsImportant={ newNoteIsImportant }
+          onHandleNewNoteIsImportant={ handleNewNoteIsImportant }
+        />
       </div>
 
       <div>
-        <h4>List</h4>
+        <SectionTitle title='List' />
         <ul>
           {notes.map(note => 
             <Note key={note.id} note={note} />
