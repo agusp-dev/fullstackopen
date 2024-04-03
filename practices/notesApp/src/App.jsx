@@ -6,6 +6,8 @@ import { Filter } from './components/Filter'
 import { CreateNoteForm } from './components/CreateNoteForm'
 import { FILTER } from './constants'
 
+const NOTES_URL = 'http://localhost:3001/notes'
+
 function App() {
   
   const [notes, setNotes] = useState([])
@@ -16,7 +18,7 @@ function App() {
 
   useEffect(() => {
     axios
-      .get('http://localhost:3001/notes')
+      .get(NOTES_URL)
       .then(response => {
         if (response?.status === 200 || response?.status === 201) {
           setNotes( response?.data )
@@ -24,10 +26,10 @@ function App() {
       })
   }, [])
 
-  // const resetStates = () => {
-  //   setNewNoteContent('')
-  //   setNewNoteIsImportant(false)
-  // }
+  const resetStates = () => {
+    setNewNoteContent('')
+    setNewNoteIsImportant(false)
+  }
 
   const filterNotes = (str) => {
     if (!str) return notes
@@ -50,20 +52,28 @@ function App() {
     setNewNoteIsImportant(newValue)
   }
 
-  //TODO CHECK
+  const createNote = (note) => {
+    axios
+      .post(NOTES_URL, note)
+      .then(response => {
+        if (response?.status === 201) {
+          setNotes(currentNotes => currentNotes?.concat(response.data))
+        }
+      })
+  }
+
   const handleSubmit = (event) => {
     event?.preventDefault()
 
-    // if (!newNoteContent) return
+    if (!newNoteContent) return
     
-    // const newNotePayload = {
-    //   id: notesArr?.length + 1,
-    //   content: newNoteContent,
-    //   important: newNoteIsImportant
-    // }
+    const notePayload = {
+      content: newNoteContent,
+      important: newNoteIsImportant
+    }
 
-    // onAddNewNote( newNotePayload )
-    // resetStates()
+    createNote(notePayload)
+    resetStates()
   }
 
   return (
