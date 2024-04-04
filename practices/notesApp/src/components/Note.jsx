@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 
 export const Note = ({ id, content, important, onToggleImportance }) => (
-  <li>
+  <li className='note'>
     <div>
       { content }
     </div>
