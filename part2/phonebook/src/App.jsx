@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
 import { Person } from './components/Person'
 import { Filter } from './components/Filter'
 import { PersonForm } from './components/PersonForm'
-
-const PERSONS_ENDPOINT = 'http://localhost:3001/persons'
+import { SectionTitle } from './components/SectionTitle'
+import { getAll, create } from './services'
 
 function App() {
   const [persons, setPersons] = useState([]) 
@@ -13,13 +12,9 @@ function App() {
   const [filter, setFilter] = useState('')
 
   useEffect(() => {
-    axios
-      .get(PERSONS_ENDPOINT)
-      .then(response => {
-        if (response?.status === 200) {
-          setPersons(response?.data)
-        }
-      })
+    getAll()
+      .then(initialList => setPersons(initialList))
+      .catch(err => alert(err?.message))
   }, [])
 
   const handleFilterChange = (e) => {
@@ -42,13 +37,11 @@ function App() {
   const nameAlreadyExists = (name) => persons?.find(person => person?.name === name)
 
   const addNewPerson = (person) => {
-    axios
-      .post(PERSONS_ENDPOINT, person)
-      .then(response => {
-        if (response?.status === 201) {
-          setPersons(currentPersons => currentPersons?.concat(response?.data))
-        }
+    create(person)
+      .then(newPerson => {
+        if (newPerson) setPersons(currentPersons => currentPersons?.concat(newPerson))
       })
+      .catch(err => alert(err?.message))
   }
 
   const handleFormSubmit = (e) => {
@@ -60,10 +53,7 @@ function App() {
       return
     }
 
-    const payload = { name: newName, number: newPhone }
-
-    addNewPerson(payload)
-    // setPersons(currentPersons => [...currentPersons, { id: currentPersons?.length + 1, ...payload }])
+    addNewPerson({ name: newName, number: newPhone })
 
     resetStates()
   }
@@ -77,7 +67,6 @@ function App() {
     <div>
       <h2>Phonebook</h2>
       <Filter filter={ filter } onChange={ handleFilterChange } />
-      <h3>Add a New</h3>
       <PersonForm 
         name={ newName }
         onChangeName={ handleNameChange }
@@ -85,7 +74,7 @@ function App() {
         onChangePhone={ handlePhoneChange }
         onHandleSubmit={ handleFormSubmit }
       />
-      <h3>Numbers</h3>
+      <SectionTitle title='Numbers'/>
       <div>
         {persons?.length ? (
           <ul>
