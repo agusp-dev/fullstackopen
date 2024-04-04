@@ -16,6 +16,13 @@ export const create = (payload) => axios
     : null
   )
 
+export const update = (id, payload) => axios
+  .patch(`${baseUrl}/${id}`, payload)
+  .then(response => response?.status === 200
+    ? response?.data
+    : null
+  )
+
 export const remove = (id) => axios
   .delete(`${baseUrl}/${id}`)
   .then(response => response?.status === 200

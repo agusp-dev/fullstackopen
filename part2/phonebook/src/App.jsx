@@ -3,7 +3,7 @@ import { Person } from './components/Person'
 import { Filter } from './components/Filter'
 import { PersonForm } from './components/PersonForm'
 import { SectionTitle } from './components/SectionTitle'
-import { getAll, create, remove } from './services'
+import { getAll, create, update, remove } from './services'
 
 function App() {
   const [persons, setPersons] = useState([]) 
@@ -34,7 +34,10 @@ function App() {
     setNewPhone('')
   }
 
-  const nameAlreadyExists = (name) => persons?.find(person => person?.name === name)
+  const personAlreadyExists = (name) => {
+    const selectedPerson = persons?.find(person => person?.name === name)
+    return selectedPerson?.id
+  }
 
   const addNewPerson = (person) => {
     create(person)
@@ -44,29 +47,21 @@ function App() {
       .catch(err => alert(err?.message))
   }
 
+  const updatePerson = (id, payload) => {
+    update(id, payload)
+      .then(updatedPerson => {
+        if (updatedPerson?.id) {
+          setPersons(currentPersons => 
+            currentPersons?.map(p => p?.id !== updatedPerson?.id ? p : updatedPerson)
+          )
+        }
+      })
+  }
+
   const removePerson = (id) => {
     remove(id)
       .then(removedPersonId => setPersons(currentPersons => currentPersons?.filter(person => person?.id !== removedPersonId)))
       .catch(err => alert(err?.message))
-  }
-
-  const handleFormSubmit = (e) => {
-    e?.preventDefault()
-    if (!newName || !newPhone) return
-
-    if ( nameAlreadyExists(newName) ) {
-      alert(`${newName} already exists!`)
-      return
-    }
-
-    addNewPerson({ name: newName, number: newPhone })
-
-    resetStates()
-  }
-
-  const personsFiltered = filter => {
-    if (!filter) return persons
-    return persons?.filter(({ name }) => name?.toLowerCase()?.startsWith(filter?.toLowerCase()) )
   }
 
   const handleRemovePerson = (id) => {
@@ -75,6 +70,31 @@ function App() {
     const confirmResult = confirm(`Do you want to delete ${selectedPerson?.name}?`)
     if (!confirmResult) return
     removePerson(id)
+  }
+
+  const handleFormSubmit = (e) => {
+    e?.preventDefault()
+    if (!newName || !newPhone) return
+
+    const payload = { name: newName, number: newPhone }
+
+    const personId = personAlreadyExists(newName)
+    if (personId) {
+      const confirmResult = confirm(`${newName} is already added to phonebook! Do you want to replace the old number with a new one?`)
+      if (confirmResult) {
+        updatePerson(personId, payload)
+      }
+      resetStates()
+      return
+    }
+
+    addNewPerson(payload)
+    resetStates()
+  }
+
+  const personsFiltered = filter => {
+    if (!filter) return persons
+    return persons?.filter(({ name }) => name?.toLowerCase()?.startsWith(filter?.toLowerCase()) )
   }
 
   return (
