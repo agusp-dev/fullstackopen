@@ -3,6 +3,7 @@ import { Person } from './components/Person'
 import { Filter } from './components/Filter'
 import { PersonForm } from './components/PersonForm'
 import { SectionTitle } from './components/SectionTitle'
+import { Notification } from './components/Notification'
 import { getAll, create, update, remove } from './services'
 
 function App() {
@@ -10,11 +11,27 @@ function App() {
   const [newName, setNewName] = useState('')
   const [newPhone, setNewPhone] = useState('')
   const [filter, setFilter] = useState('')
+  const [error, setError] = useState(null)
+  const [success, setSuccess] = useState(null)
+
+  const showErrorNotification = (message) => {
+    setError(message)
+    setTimeout(() => {
+      setError('')
+    }, 4000)
+  }
+
+  const showSuccessNotification = (message) => {
+    setSuccess(message)
+    setTimeout(() => {
+      setSuccess(null)
+    }, 1500)
+  }
 
   useEffect(() => {
     getAll()
       .then(initialList => setPersons(initialList))
-      .catch(err => alert(err?.message))
+      .catch(err => showErrorNotification(err?.message))
   }, [])
 
   const handleFilterChange = (e) => {
@@ -42,9 +59,12 @@ function App() {
   const addNewPerson = (person) => {
     create(person)
       .then(newPerson => {
-        if (newPerson) setPersons(currentPersons => currentPersons?.concat(newPerson))
+        if (newPerson) {
+          setPersons(currentPersons => currentPersons?.concat(newPerson))
+          showSuccessNotification(`${newPerson?.name} was added!`)
+        }
       })
-      .catch(err => alert(err?.message))
+      .catch(err => showErrorNotification(err?.message))
   }
 
   const updatePerson = (id, payload) => {
@@ -61,7 +81,7 @@ function App() {
   const removePerson = (id) => {
     remove(id)
       .then(removedPersonId => setPersons(currentPersons => currentPersons?.filter(person => person?.id !== removedPersonId)))
-      .catch(err => alert(err?.message))
+      .catch(err => showErrorNotification(err?.message))
   }
 
   const handleRemovePerson = (id) => {
@@ -99,6 +119,8 @@ function App() {
 
   return (
     <div>
+      { error && <Notification type='notification-error' message={ error } />}
+      { success && <Notification type='notification-success' message={ success } /> }
       <h2>Phonebook</h2>
       <Filter filter={ filter } onChange={ handleFilterChange } />
       <PersonForm 
