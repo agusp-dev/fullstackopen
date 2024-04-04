@@ -42,6 +42,18 @@ button {
   transition: border-color 0.25s;
 }
 
+h6 {
+  font-size: 1.1rem;
+  padding: 0;
+  margin: 0;
+}
+
+.weather {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

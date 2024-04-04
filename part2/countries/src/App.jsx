@@ -12,8 +12,6 @@ export const App = () => {
   const [allCountries, setAllCountries] = useState()
   const [countries, setCountries] = useState(null)
 
-  console.log('countries', countries)
-
   useEffect(() => {
     getAll()
       .then(list => setAllCountries(list))
