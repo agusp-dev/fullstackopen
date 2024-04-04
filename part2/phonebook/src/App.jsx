@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
 import { Person } from './components/Person'
 import { Filter } from './components/Filter'
 import { PersonForm } from './components/PersonForm'
-
-const PERSONS_ENDPOINT = 'http://localhost:3001/persons'
+import { SectionTitle } from './components/SectionTitle'
+import { getAll, create, update, remove } from './services'
 
 function App() {
   const [persons, setPersons] = useState([]) 
@@ -13,13 +12,9 @@ function App() {
   const [filter, setFilter] = useState('')
 
   useEffect(() => {
-    axios
-      .get(PERSONS_ENDPOINT)
-      .then(response => {
-        if (response?.status === 200) {
-          setPersons(response?.data)
-        }
-      })
+    getAll()
+      .then(initialList => setPersons(initialList))
+      .catch(err => alert(err?.message))
   }, [])
 
   const handleFilterChange = (e) => {
@@ -39,32 +34,61 @@ function App() {
     setNewPhone('')
   }
 
-  const nameAlreadyExists = (name) => persons?.find(person => person?.name === name)
+  const personAlreadyExists = (name) => {
+    const selectedPerson = persons?.find(person => person?.name === name)
+    return selectedPerson?.id
+  }
 
   const addNewPerson = (person) => {
-    axios
-      .post(PERSONS_ENDPOINT, person)
-      .then(response => {
-        if (response?.status === 201) {
-          setPersons(currentPersons => currentPersons?.concat(response?.data))
+    create(person)
+      .then(newPerson => {
+        if (newPerson) setPersons(currentPersons => currentPersons?.concat(newPerson))
+      })
+      .catch(err => alert(err?.message))
+  }
+
+  const updatePerson = (id, payload) => {
+    update(id, payload)
+      .then(updatedPerson => {
+        if (updatedPerson?.id) {
+          setPersons(currentPersons => 
+            currentPersons?.map(p => p?.id !== updatedPerson?.id ? p : updatedPerson)
+          )
         }
       })
+  }
+
+  const removePerson = (id) => {
+    remove(id)
+      .then(removedPersonId => setPersons(currentPersons => currentPersons?.filter(person => person?.id !== removedPersonId)))
+      .catch(err => alert(err?.message))
+  }
+
+  const handleRemovePerson = (id) => {
+    const selectedPerson = persons?.find(p => p?.id === id)
+    if (!selectedPerson?.id) return
+    const confirmResult = confirm(`Do you want to delete ${selectedPerson?.name}?`)
+    if (!confirmResult) return
+    removePerson(id)
   }
 
   const handleFormSubmit = (e) => {
     e?.preventDefault()
     if (!newName || !newPhone) return
 
-    if ( nameAlreadyExists(newName) ) {
-      alert(`${newName} already exists!`)
+    const payload = { name: newName, number: newPhone }
+
+    const personId = personAlreadyExists(newName)
+    if (personId) {
+      const confirmResult = confirm(`${newName} is already added to phonebook! Do you want to replace the old number with a new one?`)
+      if (confirmResult) {
+        updatePerson(personId, payload)
+      }
+      resetStates()
       return
     }
 
-    const payload = { name: newName, number: newPhone }
-
     addNewPerson(payload)
-    // setPersons(currentPersons => [...currentPersons, { id: currentPersons?.length + 1, ...payload }])
-
     resetStates()
   }
 
@@ -77,7 +101,6 @@ function App() {
     <div>
       <h2>Phonebook</h2>
       <Filter filter={ filter } onChange={ handleFilterChange } />
-      <h3>Add a New</h3>
       <PersonForm 
         name={ newName }
         onChangeName={ handleNameChange }
@@ -85,11 +108,17 @@ function App() {
         onChangePhone={ handlePhoneChange }
         onHandleSubmit={ handleFormSubmit }
       />
-      <h3>Numbers</h3>
+      <SectionTitle title='Numbers'/>
       <div>
         {persons?.length ? (
           <ul>
-            { personsFiltered(filter)?.map(({ id, name, number }) => <Person key={ id } name={ name } number={ number } /> ) }
+            {personsFiltered(filter)?.map((person) => (
+              <Person 
+                key={ person?.id } 
+                onRemove={ handleRemovePerson } 
+                { ...person } 
+              />
+            ))}
           </ul>
         ) : <div>Empty Phonebook...</div>}
       </div>
