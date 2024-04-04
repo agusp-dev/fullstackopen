@@ -69,6 +69,14 @@ function App() {
     return persons?.filter(({ name }) => name?.toLowerCase()?.startsWith(filter?.toLowerCase()) )
   }
 
+  const handleRemovePerson = (id) => {
+    const selectedPerson = persons?.find(p => p?.id === id)
+    if (!selectedPerson?.id) return
+    const confirmResult = confirm(`Do you want to delete ${selectedPerson?.name}?`)
+    if (!confirmResult) return
+    removePerson(id)
+  }
+
   return (
     <div>
       <h2>Phonebook</h2>
@@ -87,7 +95,7 @@ function App() {
             {personsFiltered(filter)?.map((person) => (
               <Person 
                 key={ person?.id } 
-                onRemove={ removePerson } 
+                onRemove={ handleRemovePerson } 
                 { ...person } 
               />
             ))}
