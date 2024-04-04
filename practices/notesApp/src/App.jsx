@@ -3,6 +3,7 @@ import { Note } from './components/Note'
 import { SectionTitle } from './components/SectionTitle'
 import { Filter } from './components/Filter'
 import { CreateNoteForm } from './components/CreateNoteForm'
+import { Notification } from './components/Notification'
 import { getAll, create, update } from './services'
 import { FILTER } from './constants'
 
@@ -11,11 +12,16 @@ function App() {
   const [notes, setNotes] = useState([])
   const [newNoteContent, setNewNoteContent] = useState('')
   const [newNoteIsImportant, setNewNoteIsImportant] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
-  useEffect(() => {
+  const getNotes = () => {
     getAll()
       .then(initialNotes => setNotes(initialNotes))
-      .catch(error => alert(error?.message))
+      .catch(error => setErrorMessage(error?.message))
+  }
+
+  useEffect(() => {
+    getNotes()
   }, [])
 
   const resetStates = () => {
@@ -23,15 +29,14 @@ function App() {
     setNewNoteIsImportant(false)
   }
 
-  const filterNotes = (str) => {
-    if (!str) return notes
-    if (str === FILTER.ALL) return notes
-    if (str === FILTER.IMPORTANTS) return notes?.filter(({ important }) => important)
-  }
-
   const handleChangeFilter = event => {
     const filterStr = event?.target?.value
-    setNotes( filterNotes(filterStr) )
+    if (filterStr === FILTER.IMPORTANTS) {
+      const importants = notes?.filter(({ important }) => important)
+      setNotes(importants)
+      return
+    }
+    getNotes()
   }
 
   const handleNewNoteContent = (event) => {
@@ -51,7 +56,7 @@ function App() {
           setNotes(currentNotes => currentNotes?.concat(newNote))
         }
       })
-      .catch(error => alert(error?.message))
+      .catch(error => setErrorMessage(error?.message))
   }
 
   const updateNote = (id, important) => {
@@ -62,7 +67,7 @@ function App() {
           setNotes(currentNotes => currentNotes?.map(note => note?.id !== updatedNote?.id ? note : updatedNote))
         }
       })
-      .catch(error => alert(error?.message))
+      .catch(error => setErrorMessage(error?.message))
   }
 
   const handleSubmit = (event) => {
@@ -82,6 +87,7 @@ function App() {
   return (
     <div>
       <h1>Notes</h1>
+      { errorMessage && <Notification message={ errorMessage }/> }
       <div>
         <SectionTitle title='Filter' />
         <Filter onHandleChangeFilter={ handleChangeFilter } />

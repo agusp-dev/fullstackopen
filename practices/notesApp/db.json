@@ -3,7 +3,7 @@
     {
       "id": "1",
       "content": "HTML is easy",
-      "important": true
+      "important": false
     },
     {
       "id": "2",
@@ -23,7 +23,7 @@
     {
       "id": "957d",
       "content": "I Want to learn Node.js",
-      "important": true
+      "important": false
     },
     {
       "id": "ff5d",
@@ -34,6 +34,11 @@
       "id": "c124",
       "content": "I want to be a fullstack...",
       "important": true
+    },
+    {
+      "id": "d35f",
+      "content": "Wow, this is very important note!",
+      "important": false
     }
   ]
 }
