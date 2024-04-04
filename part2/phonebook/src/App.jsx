@@ -3,7 +3,7 @@ import { Person } from './components/Person'
 import { Filter } from './components/Filter'
 import { PersonForm } from './components/PersonForm'
 import { SectionTitle } from './components/SectionTitle'
-import { getAll, create } from './services'
+import { getAll, create, remove } from './services'
 
 function App() {
   const [persons, setPersons] = useState([]) 
@@ -44,6 +44,12 @@ function App() {
       .catch(err => alert(err?.message))
   }
 
+  const removePerson = (id) => {
+    remove(id)
+      .then(removedPersonId => setPersons(currentPersons => currentPersons?.filter(person => person?.id !== removedPersonId)))
+      .catch(err => alert(err?.message))
+  }
+
   const handleFormSubmit = (e) => {
     e?.preventDefault()
     if (!newName || !newPhone) return
@@ -78,7 +84,13 @@ function App() {
       <div>
         {persons?.length ? (
           <ul>
-            { personsFiltered(filter)?.map(({ id, name, number }) => <Person key={ id } name={ name } number={ number } /> ) }
+            {personsFiltered(filter)?.map((person) => (
+              <Person 
+                key={ person?.id } 
+                onRemove={ removePerson } 
+                { ...person } 
+              />
+            ))}
           </ul>
         ) : <div>Empty Phonebook...</div>}
       </div>

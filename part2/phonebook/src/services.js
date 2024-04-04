@@ -15,3 +15,10 @@ export const create = (payload) => axios
     ? response?.data
     : null
   )
+
+export const remove = (id) => axios
+  .delete(`${baseUrl}/${id}`)
+  .then(response => response?.status === 200
+    ? response?.data?.id
+    : null
+  )
