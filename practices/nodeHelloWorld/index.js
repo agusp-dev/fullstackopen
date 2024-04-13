@@ -1,6 +1,25 @@
 const express = require('express')
 const app = express()
 
+app.use(express.json())
+
+// custom middleware
+const requestLogger = (request, response, next) => {
+  // console.log('Url', request?.url)
+  console.log('Method', request?.method)
+  console.log('Path', request?.path)
+  console.log('Body', request?.body)
+  console.log('---')
+  next()
+}
+
+app.use(requestLogger)
+
+// UnknowEndpoint middleware
+const unknowEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknow endpoint' })
+}
+
 let notes = [
   {
     id: 1,
@@ -76,8 +95,6 @@ app.delete('/api/notes/:id', (request, response) => {
   response.status(204).end()
 })
 
-app.use(express.json())
-
 // Tambien se podria hacer con Math.max
 const getMaxId = (list) => {
   if (!list?.length) return 0
@@ -111,6 +128,8 @@ app.post('/api/notes', (request, response) => {
   notes = notes?.concat(note)
   response.json(note)
 })
+
+app.use(unknowEndpoint)
 
 const PORT = 3001
 
