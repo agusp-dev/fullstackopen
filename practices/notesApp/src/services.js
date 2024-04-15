@@ -2,23 +2,14 @@ import axios from 'axios'
 
 const success_code = {
   get: 200,
-  post: 201,
+  post: 200,
   patch: 200,
 }
 
-const baseUrl = 'http://localhost:3001/notes'
+const baseUrl = 'http://localhost:3001/api/notes'
 
 export const getAll = () => {
-  const nonExisting = {
-    id: '10000',
-    content: 'This note is not saved to server',
-    important: true,
-  }
-  return axios.get(baseUrl).then(response => {
-    return response?.status === success_code.get
-      ? response?.data?.concat(nonExisting)
-      : []
-  })
+  return axios.get(baseUrl).then(response => response?.data)
 }
 
 export const create = (payload) => {

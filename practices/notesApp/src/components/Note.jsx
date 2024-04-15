@@ -15,7 +15,7 @@ export const Note = ({ id, content, important, onToggleImportance }) => (
 )
 
 Note.propTypes = {
-  id: PropTypes.string.isRequired,
+  id: PropTypes.number.isRequired,
   content: PropTypes.string.isRequired,
   important: PropTypes.bool.isRequired,
   onToggleImportance: PropTypes.func.isRequired,
