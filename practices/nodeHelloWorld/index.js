@@ -1,6 +1,8 @@
 const express = require('express')
+const cors = require('cors')
 const app = express()
 
+app.use(cors())
 app.use(express.json())
 
 // custom middleware
@@ -120,7 +122,7 @@ app.post('/api/notes', (request, response) => {
   }
 
   const note = {
-    content: body.content, // 0
+    content: body.content,
     important: Boolean(body?.important) || false,
     id: generateId()
   }
